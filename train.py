@@ -65,7 +65,7 @@ with tf.Session() as sess:
         writer.add_summary(summary, i)
 
         if (i+1) % 1000 == 0:
-            saver.save(sess, checkpoint_directory+'checkpoint_model_%s.model' % str(i+1), global_step=global_steps)
+            saver.save(sess, checkpoint_directory+'ckpt_model_%s.model' % str(i+1), global_step=global_steps)
 
         print 'Iteration = %s, loss = %s' % (str(i), str(loss/BATCH_SIZE))
 writer.close()
