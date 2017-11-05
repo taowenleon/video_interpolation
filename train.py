@@ -46,6 +46,8 @@ learning_rate = tf.train.exponential_decay(START_LEARNING_RATE, global_steps, 50
 
 loss_l2 = net(inputs, labels)
 tf.summary.scalar('loss', loss_l2)
+tf.summary.scalar('leaning rate', learning_rate)
+
 optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss_l2, global_step=global_steps)
 
 for var in tf.trainable_variables():
