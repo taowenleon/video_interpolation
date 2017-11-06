@@ -26,7 +26,7 @@ def video_decoder(path):
             capture = cv2.VideoCapture(os.path.join(root, video))
 
             nFrames = int(capture.get(cv2.CAP_PROP_FRAME_COUNT))
-            if nFrames < 100:
+            if nFrames > 100:
                 continue
 
             if count % 10 == 0:

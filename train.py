@@ -44,7 +44,7 @@ saver = tf.train.Saver()
 
 learning_rate = tf.train.exponential_decay(START_LEARNING_RATE, global_steps, 5000, 0.96, staircase=True)
 
-loss_l2 = net(inputs, labels)
+_,loss_l2 = net(inputs, labels)
 tf.summary.scalar('loss', loss_l2)
 tf.summary.scalar('leaning rate', learning_rate)
 

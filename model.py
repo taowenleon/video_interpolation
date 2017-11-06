@@ -71,4 +71,4 @@ def net(input, label):
 
     loss_l2 = tf.nn.l2_loss(conv_9-label)
 
-    return loss_l2
+    return conv_9, loss_l2
