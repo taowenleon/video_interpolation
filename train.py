@@ -44,7 +44,7 @@ learning_rate = tf.train.exponential_decay(START_LEARNING_RATE, global_steps, 50
 
 _, loss_l2 = net(inputs, labels)
 
-loss_l2 = loss_l2/(BATCH_SIZE*height*width*depth)
+loss_l2 = loss_l2/BATCH_SIZE
 
 tf.summary.scalar('loss', loss_l2)
 tf.summary.scalar('leaning rate', learning_rate)
@@ -58,8 +58,6 @@ init = tf.global_variables_initializer()
 
 merged = tf.summary.merge_all()
 
-saver = tf.train.Saver()
-
 with tf.Session() as sess:
     sess.run(init)
     coord = tf.train.Coordinator()
@@ -67,7 +65,7 @@ with tf.Session() as sess:
     writer = tf.summary.FileWriter(log_directory, sess.graph)
 
     ckpt = tf.train.get_checkpoint_state(checkpoint_directory)
-
+    saver = tf.train.Saver()
     if ckpt and ckpt.model_checkpoint_path:
         print ckpt.model_checkpoint_path
         saver.restore(sess, ckpt.model_checkpoint_path)
@@ -79,7 +77,7 @@ with tf.Session() as sess:
         writer.add_summary(summary, i)
 
         global_steps.assign(i).eval()
-        if i % 100 == 0:
+        if i % 500 == 0:
             saver.save(sess, checkpoint_directory+'trained_ckpt_model',
                        global_step=global_steps)
 
