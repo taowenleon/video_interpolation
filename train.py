@@ -2,9 +2,9 @@ import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # Just show warnings and errors
 import numpy as np
 import tensorflow as tf
-from model import net
+from model import model
 
-# import tensorflow.contrib.slim as slim
+import tensorflow.contrib.slim as slim
 
 import sys
 sys.path.append("../../")
@@ -42,7 +42,10 @@ labels = tf.placeholder(tf.float32, [None, height, width, depth], name='labels')
 global_steps = tf.Variable(0, dtype=tf.int32, trainable=False, name='global_steps')
 learning_rate = tf.train.exponential_decay(START_LEARNING_RATE, global_steps, 5000, 0.96, staircase=True)
 
-_, loss_l2 = net(inputs, labels)
+# _, loss_l2 = net(inputs, labels)
+predection = model(inputs)
+
+loss_l2 = tf.nn.l2_loss(predection-labels)
 
 loss_l2 = loss_l2/BATCH_SIZE
 
@@ -73,7 +76,7 @@ with tf.Session() as sess:
     print "Start from:", start
 
     for i in range(start, MAX_EPOCHES):
-        _, loss, summary = sess.run([optimizer, loss_l2, merged], feed_dict={inputs:img_batch.eval(), labels:label_batch.eval()})
+        _, _, loss, summary = sess.run([optimizer, predection, loss_l2, merged], feed_dict={inputs:img_batch.eval(), labels:label_batch.eval()})
         writer.add_summary(summary, i)
 
         global_steps.assign(i).eval()
