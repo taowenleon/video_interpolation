@@ -2,7 +2,7 @@ import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # Just show warnings and errors
 import numpy as np
 import tensorflow as tf
-from model import model
+from model import net
 
 import tensorflow.contrib.slim as slim
 
@@ -12,6 +12,7 @@ sys.path.append("../../")
 from dataset2 import decoder_tfRecords
 
 # checkpoint_directory = './checkpoints/'
+
 checkpoint_directory = './ckpt/'
 log_directory = '../../log/video_interpolation/'
 tfrecords_path = '../../Data/UCF101_dataset_float32.tfrecords'
@@ -20,7 +21,7 @@ if not os.path.exists(checkpoint_directory):
     os.makedirs(checkpoint_directory)
 
 BATCH_SIZE = 32
-START_LEARNING_RATE = 0.001
+START_LEARNING_RATE = 0.00001
 MAX_EPOCHES = 100000
 height = 128
 width = 128
@@ -30,20 +31,20 @@ frames, ground_truth = decoder_tfRecords(tfrecords_path)
 
 img_batch, label_batch = tf.train.shuffle_batch(
     [frames, ground_truth],
-    batch_size=8,
-    capacity=1000,
+    batch_size=32,
+    capacity=5000,
     num_threads=4,
-    min_after_dequeue=8
+    min_after_dequeue=1000
 )
 
 inputs = tf.placeholder(tf.float32, [None, height, width, depth*2], name='inputs')
 labels = tf.placeholder(tf.float32, [None, height, width, depth], name='labels')
 
 global_steps = tf.Variable(0, dtype=tf.int32, trainable=False, name='global_steps')
-learning_rate = tf.train.exponential_decay(START_LEARNING_RATE, global_steps, 5000, 0.96, staircase=True)
+learning_rate = tf.train.exponential_decay(START_LEARNING_RATE, global_steps, 5000, 0.95, staircase=True)
 
 # _, loss_l2 = net(inputs, labels)
-predection = model(inputs)
+predection = net(inputs)
 
 loss_l2 = tf.nn.l2_loss(predection-labels)
 
