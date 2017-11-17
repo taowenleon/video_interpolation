@@ -2,6 +2,8 @@ import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # Just show warnings and errors
 import numpy as np
 import tensorflow as tf
+import cv2
+from PIL import Image
 from model import net
 
 import tensorflow.contrib.slim as slim
@@ -15,17 +17,19 @@ from dataset2 import decoder_tfRecords
 
 checkpoint_directory = './ckpt/'
 log_directory = '../../log/video_interpolation/'
-tfrecords_path = '../../Data/UCF101_dataset_float32.tfrecords'
+tfrecords_path = '../../Data/UCF101_dataset_test.tfrecords'
 
 if not os.path.exists(checkpoint_directory):
     os.makedirs(checkpoint_directory)
 
 BATCH_SIZE = 32
-START_LEARNING_RATE = 0.00001
+START_LEARNING_RATE = 0.001
 MAX_EPOCHES = 100000
 height = 128
 width = 128
 depth = 3
+
+# swd = "./batch_test/"
 
 frames, ground_truth = decoder_tfRecords(tfrecords_path)
 
@@ -37,11 +41,41 @@ img_batch, label_batch = tf.train.shuffle_batch(
     min_after_dequeue=1000
 )
 
+# with tf.Session() as sess:
+#     init_op = tf.initialize_all_variables()
+#     sess.run(init_op)
+#     coord=tf.train.Coordinator()
+#     threads= tf.train.start_queue_runners(sess = sess,coord=coord)
+#     for i in range(10):
+#         example, l = sess.run([img_batch,label_batch])
+#         example = example/255.
+#         l = l/255.
+#         for j in range(BATCH_SIZE):
+#             # frame1 = Image.fromarray(example[j][:,:,0:3]/255., 'RGB')
+#             # frame3 = Image.fromarray(example[j][:,:,3:6]/255., 'RGB')
+#             # frame2 = Image.fromarray(l[j]/255., 'RGB')
+#             frame1 = example[j][:,:,0:3]
+#             frame2 = example[j][:, :, 3:6]
+#             frame3 = l[j]
+#             # sigle_label = l[j]
+#
+#             cv2.imwrite(swd + 'batch_' + str(i) + '_' + 'size_' + str(j) + '_' + 'frame1' + '.jpg', frame1*255)
+#             cv2.imwrite(swd + 'batch_' + str(i) + '_' + 'size_' + str(j) + '_' + 'frame2' + '.jpg', frame2*255)
+#             cv2.imwrite(swd + 'batch_' + str(i) + '_' + 'size_' + str(j) + '_' + 'frame3' + '.jpg', frame3*255)
+#
+#             # print(example, l)
+#
+#     coord.request_stop()
+#     coord.join(threads)
+
+
+
+
 inputs = tf.placeholder(tf.float32, [None, height, width, depth*2], name='inputs')
 labels = tf.placeholder(tf.float32, [None, height, width, depth], name='labels')
 
 global_steps = tf.Variable(0, dtype=tf.int32, trainable=False, name='global_steps')
-learning_rate = tf.train.exponential_decay(START_LEARNING_RATE, global_steps, 5000, 0.95, staircase=True)
+learning_rate = tf.train.exponential_decay(START_LEARNING_RATE, global_steps, 5000, 0.8, staircase=True)
 
 # _, loss_l2 = net(inputs, labels)
 predection = net(inputs)
@@ -55,8 +89,8 @@ tf.summary.scalar('leaning rate', learning_rate)
 
 optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss_l2, global_step=global_steps)
 
-for var in tf.trainable_variables():
-    tf.summary.histogram(var.name, var)
+# for var in tf.trainable_variables():
+#     tf.summary.histogram(var.name, var)
 
 init = tf.global_variables_initializer()
 
@@ -77,7 +111,7 @@ with tf.Session() as sess:
     print "Start from:", start
 
     for i in range(start, MAX_EPOCHES):
-        _, _, loss, summary = sess.run([optimizer, predection, loss_l2, merged], feed_dict={inputs:img_batch.eval(), labels:label_batch.eval()})
+        _, _, loss, summary = sess.run([optimizer, predection, loss_l2, merged], feed_dict={inputs:img_batch.eval()/255., labels:label_batch.eval()/255.})
         writer.add_summary(summary, i)
 
         global_steps.assign(i).eval()

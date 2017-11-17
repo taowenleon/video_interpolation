@@ -1,7 +1,7 @@
 import os
 import cv2
 import numpy as np
-
+from PIL import Image
 import matplotlib.pyplot as plt
 
 import tensorflow as tf
@@ -15,7 +15,8 @@ def _int64_feature(value):
 
 def video_decoder(path):
     count = 1
-    tfRecords = '../Data/UCF101_dataset_float32.tfrecords'
+
+    tfRecords = '../../Data/UCF101_dataset_train.tfrecords'
     writer = tf.python_io.TFRecordWriter(tfRecords)
     for root, dirs, files in os.walk(path):
         print 'Total %s vidoes!' % str(len(files))
@@ -40,7 +41,7 @@ def video_decoder(path):
     writer.close()
 
 def write_tfRecords(writer, frames):
-    frames = np.stack(frames)
+    frames = np.array(frames)
     height = frames.shape[1]
     width = frames.shape[2]
     depth = frames.shape[3]
@@ -53,13 +54,20 @@ def write_tfRecords(writer, frames):
     train_label = train_middle
 
     for i in range(train_label.shape[0]):
-        frame_input_raw = train_doublets[i, :, :, :].tostring()
-        frame_lable_raw = train_label[i, :, :, :].tostring()
+        # plt.subplot(221)
+        # plt.imshow(train_doublets[2,:,:,0:3])
+        # plt.subplot(222)
+        # plt.imshow(train_doublets[2, :, :, 3:6])
+        # plt.subplot(223)
+        # plt.imshow(train_label[2, :, :, :])
+        # plt.show()
+        frame_input_raw = train_doublets[i, :, :, :].tobytes()
+        frame_lable_raw = train_label[i, :, :, :].tobytes()
 
         example = tf.train.Example(features=tf.train.Features(feature={
-            'height': _int64_feature(height),
-            'width': _int64_feature(width),
-            'depth': _int64_feature(depth),
+            # 'height': _int64_feature(height),
+            # 'width': _int64_feature(width),
+            # 'depth': _int64_feature(depth),
             'frames': _bytes_feature(frame_input_raw),
             'labels': _bytes_feature(frame_lable_raw)
         }))
@@ -81,7 +89,8 @@ def read_video(video_path):
         while status:
             if frame_count <= 100:
                 frame = cv2.resize(frame, (128, 128), interpolation=cv2.INTER_CUBIC)
-                frames.append(np.array(frame / 255., dtype=np.float32))
+                # frame = Image.fromarray(frame, 'RGB')
+                frames.append(np.array(frame, dtype=np.uint8))
                 frame_count = frame_count + 1
             else:
                 break
@@ -100,23 +109,23 @@ def decoder_tfRecords(file_name):
 
     features = tf.parse_single_example(serialized_example, features={
         'frames': tf.FixedLenFeature([], tf.string),
-        'label': tf.FixedLenFeature([], tf.string),
-        'height': tf.FixedLenFeature([], tf.int64),
-        'width': tf.FixedLenFeature([], tf.int64),
-        'depth': tf.FixedLenFeature([], tf.int64)
+        'labels': tf.FixedLenFeature([], tf.string),
+        # 'height': tf.FixedLenFeature([], tf.int64),
+        # 'width': tf.FixedLenFeature([], tf.int64),
+        # 'depth': tf.FixedLenFeature([], tf.int64)
     })
 
-    frames_input = tf.decode_raw(features['frames'], tf.float32)
-    label = tf.decode_raw(features['label'], tf.float32)
-    height = tf.cast(features['height'], tf.int64)
-    width = tf.cast(features['width'], tf.int64)
-    depth = tf.cast(features['depth'], tf.int64)
+    frames_input = tf.decode_raw(features['frames'], tf.uint8)
+    label = tf.decode_raw(features['labels'], tf.uint8)
+    # height = tf.cast(features['height'], tf.int32)
+    # width = tf.cast(features['width'], tf.int32)
+    # depth = tf.cast(features['depth'], tf.int32)
 
-    frames_input = tf.reshape(frames_input, [height, width, depth])
-    label = tf.reshape(label,[height, width, depth])
-    
+    frames_input = tf.reshape(frames_input, [128, 128, 6])
+    label = tf.reshape(label, [128, 128, 3])
+
     return frames_input, label
 
 if __name__ == "__main__":
 
-    video_decoder("/home/taowen/Workspace/Data/UCF-101-Train/")
+    video_decoder("/home/taowen/Workspace/Data/UCF-101/")

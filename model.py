@@ -21,21 +21,6 @@ def deconv2d(x, W, output_shape):
 def max_pooling_2x2(x):
     return tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
 
-
-# def model(input):
-#     # Conv_1
-#     network = slim.conv2d(input, 128, [3, 3], scope='conv1_1')
-#     network = slim.batch_norm(network)
-#     # net = slim.repeat(net, 3, slim.conv2d, 256, [3, 3], scope='conv3')
-#     network = slim.stack(network, slim.conv2d, [(256, [1, 1]), (256, [3, 3]), (512, [1, 1]), (512, [3, 3,])], scope="Conv2")
-#     network = slim.batch_norm(network)
-#     network = slim.stack(network, slim.conv2d, [(512, [3, 3]), (512, [1, 1]), (256, [3, 3]), (256, [1, 1])], scope="Conv3")
-#     network = slim.batch_norm(network)
-#     network = slim.conv2d(network, 64, [3, 3], scope="Conv4")
-#     network = slim.batch_norm(network)
-#     network = slim.conv2d(network, 3, [3, 3], activation_fn=None, scope="prediction")
-#     return network
-
 def net(input):
     batch_size = tf.shape(input)[0]
     frame1 = input[:, :, :, 0:3]
@@ -112,6 +97,6 @@ def net(input):
     with tf.name_scope('Conv6') as scope:
         W_conv6 = weight_variable([3, 3, 64, 3])
         b_conv6 = bias_variable([3])
-        conv6 =tf.nn.relu(conv2d(deconv3, W_conv6) + b_conv6, name='Conv6')
+        conv6 =tf.add(conv2d(deconv3, W_conv6), b_conv6, name='Conv6')
 
     return conv6

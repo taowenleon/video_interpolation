@@ -27,7 +27,7 @@ label = label[np.newaxis, :, :, :]
 with tf.Session() as sess:
     # init_op = sess.graph.get_operation_by_name('init')
     # sess.run(init_op)
-    saver = tf.train.import_meta_graph(model_path + 'trained_ckpt_model-43500.meta')
+    saver = tf.train.import_meta_graph(model_path + 'trained_ckpt_model-1500.meta')
     # model = tf.train.get_checkpoint_state(model_path)
     saver.restore(sess, tf.train.latest_checkpoint(model_path))
 
