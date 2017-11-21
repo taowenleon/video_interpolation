@@ -18,8 +18,8 @@ from dataset2 import decoder_tfRecords
 
 # checkpoint_directory = './checkpoints/'
 
-checkpoint_directory = './ckpt_queue/'
-log_directory = '../../log/video_interpolation/model_queue/'
+checkpoint_directory = './ckpt/'
+log_directory = '../../log/video_interpolation/'
 tfrecords_path = '../../Data/UCF101_dataset_train.tfrecords'
 
 if not os.path.exists(checkpoint_directory):
@@ -38,7 +38,7 @@ frames, ground_truth = decoder_tfRecords(tfrecords_path)
 
 img_batch, label_batch = tf.train.shuffle_batch(
     [frames, ground_truth],
-    batch_size=32,
+    batch_size=BATCH_SIZE,
     capacity=5000,
     num_threads=4,
     min_after_dequeue=1000
@@ -72,16 +72,16 @@ img_batch, label_batch = tf.train.shuffle_batch(
 #     coord.join(threads)
 
 
-# inputs = tf.placeholder(tf.float32, [None, height, width, depth*2], name='inputs')
-# labels = tf.placeholder(tf.float32, [None, height, width, depth], name='labels')
+inputs = tf.placeholder(tf.float32, [None, height, width, depth*2], name='inputs')
+labels = tf.placeholder(tf.float32, [None, height, width, depth], name='labels')
 
 global_steps = tf.Variable(0, dtype=tf.int32, trainable=False, name='global_steps')
 learning_rate = tf.train.exponential_decay(START_LEARNING_RATE, global_steps, 10000, 0.95, staircase=True)
 
 # _, loss_l2 = net(inputs, labels)
-predection = net(img_batch)
+predection = net(inputs)
 
-loss_l2 = tf.nn.l2_loss(predection-label_batch)
+loss_l2 = tf.nn.l2_loss(predection-labels)
 
 loss_l2 = loss_l2/BATCH_SIZE
 
@@ -113,14 +113,9 @@ with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
         saver.restore(sess, ckpt.model_checkpoint_path)
     start = global_steps.eval()
     print "Start from:", start
-    #
-    # img_batch, label_batch = sess.run([img_batch, label_batch])
-    # img_batch = img_batch / 255.
-    # label_batch = label_batch / 255.
-
+    img_batch, label_batch = sess.run([img_batch, label_batch])
     for i in range(start, MAX_EPOCHES):
-
-        _, _, loss, summary = sess.run([optimizer, predection, loss_l2, merged])
+        _, _, loss, summary = sess.run([optimizer, predection, loss_l2, merged], feed_dict={inputs:img_batch, labels:label_batch})
         writer.add_summary(summary, i)
 
         global_steps.assign(i).eval()

@@ -122,7 +122,9 @@ def decoder_tfRecords(file_name):
     # depth = tf.cast(features['depth'], tf.int32)
 
     frames_input = tf.reshape(frames_input, [128, 128, 6])
+    frames_input = tf.cast(frames_input, tf.float32)/255.
     label = tf.reshape(label, [128, 128, 3])
+    label = tf.cast(label, tf.float32)/255.
 
     return frames_input, label
 

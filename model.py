@@ -5,6 +5,7 @@ import tensorflow as tf
 import tensorflow.contrib.slim as slim
 
 def weight_variable(shape):
+    # initial = tf.random_normal_initializer(0, 0.02)
     initial = tf.truncated_normal(shape, stddev=1e-2)
     return tf.Variable(initial)
 
@@ -97,6 +98,6 @@ def net(input):
     with tf.name_scope('Conv6') as scope:
         W_conv6 = weight_variable([3, 3, 64, 3])
         b_conv6 = bias_variable([3])
-        conv6 =tf.add(conv2d(deconv3, W_conv6), b_conv6, name='Conv6')
+        conv6 =tf.nn.sigmoid(conv2d(deconv3, W_conv6) + b_conv6, name='Conv6')
 
     return conv6
