@@ -3,19 +3,19 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import tensorflow as tf
 import numpy as np
 import cv2
-# import matplotlib
-# matplotlib.use('Qt4Agg')
+from PIL import Image
 import matplotlib.pyplot as plt
 from model import net
+from metrics import PSNR, SSIM, MSSSIM
 
 model_path = "./ckpt_queue/"
-frame_path = "./test_video_frames/v_PullUps_g12_c02/"
+frame_path = "./test_video_frames/v_PullUps_g06_c01/"
 # x = tf.placeholder(tf.float32, [1, 320, 240, 6])
 # y = tf.placeholder(tf.float32, [1, 320, 240, 6])
 
-frame1 = cv2.imread(frame_path+"11.png")
-frame2 = cv2.imread(frame_path+"12.png")
-frame3 = cv2.imread(frame_path+"13.png")
+frame1 = cv2.imread(frame_path+"1.png")
+frame2 = cv2.imread(frame_path+"2.png")
+frame3 = cv2.imread(frame_path+"3.png")
 
 input_test = np.concatenate((frame1, frame3), axis=2)
 input_test = np.array(input_test, dtype=np.float32)
@@ -37,15 +37,28 @@ with tf.Session() as sess:
     graph = tf.get_default_graph()
 
     prediction= sess.run([prediction], feed_dict={inputs: input_test})
-    prediction = np.squeeze(prediction)
+    prediction = np.uint8(np.squeeze(prediction)*255)
 
-    frame2_float = frame2/255.
-    loss = sum(sum(sum((prediction-frame2_float) ** 2))) / 2
-    print loss
+    loss = sum(sum(sum((prediction/255.-frame2/255.) ** 2))) / 2
 
-    plt.subplot(121)
+    psnr = PSNR(prediction, frame2)
+    pre_gray = prediction[:,:,0]
+    frame2_gray = frame2[:,:,0]
+    ssim = SSIM(pre_gray, frame2_gray).mean()
+    ms_ssim = MSSSIM(pre_gray, frame2_gray)
+
+    print "Loss = %.2f, PSNR = %.2f, SSIM = %.4f, MS-SSIM = %.4f" % (loss, psnr, ssim, ms_ssim)
+
+    # print "loss = %f, PSNR = %f" % (loss, psnr)
+
+    plt.subplot(221)
+    plt.imshow(frame1)
+    plt.subplot(222)
+    plt.imshow(frame3)
+
+    plt.subplot(223)
     plt.imshow(prediction)
 
-    plt.subplot(122)
+    plt.subplot(224)
     plt.imshow(frame2)
     plt.show()

@@ -26,7 +26,7 @@ if not os.path.exists(checkpoint_directory):
     os.makedirs(checkpoint_directory)
 
 BATCH_SIZE = 32
-START_LEARNING_RATE = 1e-3
+START_LEARNING_RATE = 1e-5
 MAX_EPOCHES = 100000
 height = 128
 width = 128
@@ -76,7 +76,7 @@ img_batch, label_batch = tf.train.shuffle_batch(
 # labels = tf.placeholder(tf.float32, [None, height, width, depth], name='labels')
 
 global_steps = tf.Variable(0, dtype=tf.int32, trainable=False, name='global_steps')
-learning_rate = tf.train.exponential_decay(START_LEARNING_RATE, global_steps, 10000, 0.95, staircase=True)
+learning_rate = tf.train.exponential_decay(START_LEARNING_RATE, global_steps, 20000, 0.96, staircase=True)
 
 # _, loss_l2 = net(inputs, labels)
 predection = net(img_batch)
@@ -113,10 +113,6 @@ with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
         saver.restore(sess, ckpt.model_checkpoint_path)
     start = global_steps.eval()
     print "Start from:", start
-    #
-    # img_batch, label_batch = sess.run([img_batch, label_batch])
-    # img_batch = img_batch / 255.
-    # label_batch = label_batch / 255.
 
     for i in range(start, MAX_EPOCHES):
 
