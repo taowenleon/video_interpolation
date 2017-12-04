@@ -22,8 +22,7 @@ def deconv2d(x, W, output_shape):
 def max_pooling_2x2(x):
     return tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
 
-def net(input):
-    batch_size = tf.shape(input)[0]
+def net(input, batch_size, height, width):
     frame1 = input[:, :, :, 0:3]
     frame2 = input[:, :, :, 3:6]
 
@@ -81,17 +80,17 @@ def net(input):
         merge = tf.add(pooling3_1, pooling3_2, name="Merge")
 
     with tf.name_scope('DeConv1') as scope:
-        output_shape = tf.stack([batch_size, 32, 32, 64])
+        output_shape = tf.stack([batch_size, 60, 80, 64])
         W_deconv1 = weight_variable([3, 3, 64, 128])
         deconv1 = deconv2d(merge, W_deconv1, output_shape)
 
     with tf.name_scope('DeConv2') as scope:
-        output_shape = tf.stack([batch_size, 64, 64, 64])
+        output_shape = tf.stack([batch_size, 120, 160, 64])
         W_deconv2 = weight_variable([3, 3, 64, 64])
         deconv2 = deconv2d(deconv1, W_deconv2, output_shape)
 
     with tf.name_scope('DeConv3') as scope:
-        output_shape = tf.stack([batch_size, 128, 128, 64])
+        output_shape = tf.stack([batch_size, 240, 320, 64])
         W_deconv3 = weight_variable([3, 3, 64, 64])
         deconv3 = deconv2d(deconv2, W_deconv3, output_shape)
 

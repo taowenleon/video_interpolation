@@ -16,7 +16,7 @@ def _int64_feature(value):
 def video_decoder(path):
     count = 1
 
-    tfRecords = '../../Data/UCF101_dataset_train.tfrecords'
+    tfRecords = '../../Data/UCF101_dataset_train_320_240.tfrecords'
     writer = tf.python_io.TFRecordWriter(tfRecords)
     for root, dirs, files in os.walk(path):
         print 'Total %s vidoes!' % str(len(files))
@@ -34,8 +34,8 @@ def video_decoder(path):
             '''
             Write frames to tfRecords
             '''
-            write_tfRecords(writer, frames)
-
+            if len(frames) > 0:
+                write_tfRecords(writer, frames)
             count = count + 1
 
     writer.close()
@@ -84,11 +84,14 @@ def read_video(video_path):
     capture = cv2.VideoCapture(video_path)
     nFrames = int(capture.get(cv2.CAP_PROP_FRAME_COUNT))
 
+    if nFrames <100:
+        return frames
+
     if capture.isOpened():
         status, frame = capture.read()
         while status:
             if frame_count <= 100:
-                frame = cv2.resize(frame, (128, 128), interpolation=cv2.INTER_CUBIC)
+                # frame = cv2.resize(frame, (128, 128), interpolation=cv2.INTER_CUBIC)
                 # frame = Image.fromarray(frame, 'RGB')
                 frames.append(np.array(frame, dtype=np.uint8))
                 frame_count = frame_count + 1
@@ -121,9 +124,9 @@ def decoder_tfRecords(file_name):
     # width = tf.cast(features['width'], tf.int32)
     # depth = tf.cast(features['depth'], tf.int32)
 
-    frames_input = tf.reshape(frames_input, [128, 128, 6])
+    frames_input = tf.reshape(frames_input, [240, 320, 6])
     frames_input = tf.cast(frames_input, tf.float32)/255.
-    label = tf.reshape(label, [128, 128, 3])
+    label = tf.reshape(label, [240, 320, 3])
     label = tf.cast(label, tf.float32)/255.
 
     return frames_input, label

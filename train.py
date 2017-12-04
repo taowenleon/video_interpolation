@@ -3,6 +3,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # Just show warnings and errors
 import numpy as np
 import tensorflow as tf
 import cv2
+# import math
 from PIL import Image
 from model import net
 
@@ -20,16 +21,16 @@ from dataset2 import decoder_tfRecords
 
 checkpoint_directory = './ckpt_queue/'
 log_directory = '../../log/video_interpolation/model_queue/'
-tfrecords_path = '../../Data/UCF101_dataset_train.tfrecords'
+tfrecords_path = '../../Data/UCF101_dataset_train_320_240.tfrecords'
 
 if not os.path.exists(checkpoint_directory):
     os.makedirs(checkpoint_directory)
 
-BATCH_SIZE = 32
-START_LEARNING_RATE = 1e-5
+BATCH_SIZE = 16
+START_LEARNING_RATE = 1e-4
 MAX_EPOCHES = 100000
-height = 128
-width = 128
+height = 240
+width = 320
 depth = 3
 
 swd = "./batch_test/"
@@ -38,7 +39,7 @@ frames, ground_truth = decoder_tfRecords(tfrecords_path)
 
 img_batch, label_batch = tf.train.shuffle_batch(
     [frames, ground_truth],
-    batch_size=32,
+    batch_size=BATCH_SIZE,
     capacity=5000,
     num_threads=4,
     min_after_dequeue=1000
@@ -49,7 +50,8 @@ img_batch, label_batch = tf.train.shuffle_batch(
 #     sess.run(init_op)
 #     coord=tf.train.Coordinator()
 #     threads= tf.train.start_queue_runners(sess = sess,coord=coord)
-#     for i in range(100,110):
+#     diff_sum = 0
+#     for i in range(10):
 #         example, l = sess.run([img_batch,label_batch])
 #         # example = example/255.
 #         # l = l/255.
@@ -59,6 +61,9 @@ img_batch, label_batch = tf.train.shuffle_batch(
 #             # frame`2 = Image.fromarray(l[j]/255., 'RGB')
 #             frame1 = example[j][:,:,0:3]
 #             frame2 = example[j][:, :, 3:6]
+#             diff = np.sum(np.sum(np.sum(abs(frame2*255-frame1*255), axis=2), axis=1),axis=0)
+#             diff_sum = diff_sum+diff
+#             print diff
 #             frame3 = l[j]
 #             # sigle_label = l[j]
 #
@@ -67,6 +72,7 @@ img_batch, label_batch = tf.train.shuffle_batch(
 #             cv2.imwrite(swd + 'batch_' + str(i) + '_' + 'size_' + str(j) + '_' + 'frame3' + '.png', frame3*255)
 #
 #             # print(example, l)
+#     print "average diff = %f" % (diff_sum/(10*BATCH_SIZE))
 #
 #     coord.request_stop()
 #     coord.join(threads)
@@ -76,10 +82,9 @@ img_batch, label_batch = tf.train.shuffle_batch(
 # labels = tf.placeholder(tf.float32, [None, height, width, depth], name='labels')
 
 global_steps = tf.Variable(0, dtype=tf.int32, trainable=False, name='global_steps')
-learning_rate = tf.train.exponential_decay(START_LEARNING_RATE, global_steps, 20000, 0.96, staircase=True)
-
+learning_rate = tf.train.exponential_decay(START_LEARNING_RATE, global_steps, 5000, 0.96, staircase=True)
 # _, loss_l2 = net(inputs, labels)
-predection = net(img_batch)
+predection = net(img_batch,BATCH_SIZE,height,width)
 
 loss_l2 = tf.nn.l2_loss(predection-label_batch)
 
@@ -98,9 +103,10 @@ init = tf.global_variables_initializer()
 merged = tf.summary.merge_all()
 
 
-gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.4)
+gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.8)
 
 with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
+# with tf.Session() as sess:
     sess.run(init)
     coord = tf.train.Coordinator()
     threads = tf.train.start_queue_runners(coord=coord)
