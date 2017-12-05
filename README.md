@@ -3,10 +3,10 @@ video frame interpolation with deep learning
 
 This is just a toy model, which following https://arxiv.org/abs/1706.01159.
 
-### Requirement:
+### Requirements:
 
 1. Tensorflow
-2. OpcnCV 3.0 (ReCommend)
+2. OpcnCV 3.0 (**ReCommend**)
 
 ### File lists:
  - *generate_dataset.py* : converting UCF-101 dataset to tfrecords.
