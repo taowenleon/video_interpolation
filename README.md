@@ -40,7 +40,7 @@ This is just a toy model, which following https://arxiv.org/abs/1706.01159.
  ```bash
  python train.py
  ```
- This script define some train ops and hyper-parameters, such as optimization method, learning rate and so on.
+ This script defines some train ops and hyper-parameters, such as optimization method, learning rate and so on.
 
 3. Evaluate the trained model:
  ```bash
