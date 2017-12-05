@@ -41,7 +41,7 @@ This is just a toy model, which following https://arxiv.org/abs/1706.01159.
  python train.py
  ```
  This script defines some train ops and hyper-parameters, such as optimization method, learning rate and so on.
- You can use Tensorboard to monitor the train process, using the following command:
+ You can use Tensorboard to monitor the training process, using the following command:
  ```bash
  cd log_dir
  tensorboard --logdir="./" --port 6006
