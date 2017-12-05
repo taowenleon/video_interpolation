@@ -17,7 +17,7 @@ This is just a toy model, which following https://arxiv.org/abs/1706.01159.
  - *train.py* : some train op.
  - *predict.py* : using the trained model to predict the interpolated frames.
  - *metrics.py* : including PSNR, SSIM and MS-SSIM to evaluate the quality of synthetic frame.
- - *ckpt_backup/\** : some tained models.
+ - *ckpt_backup/\** : some trained models.
  - *utils/\** : some scripts may be useful.
 
 ---
