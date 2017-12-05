@@ -1,4 +1,0 @@
-model_checkpoint_path: "trained_ckpt_model-1000"
-all_model_checkpoint_paths: "trained_ckpt_model-0"
-all_model_checkpoint_paths: "trained_ckpt_model-500"
-all_model_checkpoint_paths: "trained_ckpt_model-1000"
