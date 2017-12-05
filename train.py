@@ -1,3 +1,8 @@
+"""
+Author: taowen
+Date: 2017-11-15
+
+"""
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # Just show warnings and errors
 import numpy as np

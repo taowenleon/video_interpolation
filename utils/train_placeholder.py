@@ -1,3 +1,9 @@
+"""
+Author: taowen
+Date: 2017-11-15
+
+"""
+
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # Just show warnings and errors
 import numpy as np
@@ -12,9 +18,9 @@ from model import net
 # import tensorflow.contrib.slim as slim
 
 import sys
-sys.path.append("../../")
+sys.path.append("../")
 
-from dataset2 import decoder_tfRecords
+from generate_dataset import decoder_tfRecords
 
 # checkpoint_directory = './checkpoints/'
 
