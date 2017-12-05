@@ -34,8 +34,8 @@ This is just a toy model, which following https://arxiv.org/abs/1706.01159.
  ```bash
  python generate_dataset.py
  ```
- This script will generate many *tfrecords* format file, including *train_\*.tfrecord, val_*.tfrecord, test_*.tfrecord*, you can modify the parameters to what you want.
- 
+ This script will generate many *tfrecords* format file, including *train_\*.tfrecord, val_\*.tfrecord, test_\*.tfrecord*, you can modify the parameters to what you want.
+
 2. Train your model after obtained the training tfrecords:
  ```bash
  python train.py
