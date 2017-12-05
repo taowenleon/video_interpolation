@@ -24,4 +24,4 @@ This is just a toy model, which following https://arxiv.org/abs/1706.01159.
 1. We use UCF-101 for training and testing, you can use any dataset you like to train the model.
 2. You can design more elegant or complex model to obtain better results, just rewrite the *model.py*.
 3. We will update the repository from time to time, and hope you can join us.
-4. if you have any questions, please contact me: taowen0828@gmail.com
+4. If you have any questions, please contact me: taowen0828@gmail.com
