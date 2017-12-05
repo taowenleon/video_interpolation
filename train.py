@@ -15,16 +15,19 @@ from model import net
 import sys
 sys.path.append("../../")
 
-from dataset2 import decoder_tfRecords
+from generate_dataset import decoder_tfRecords
 
 # checkpoint_directory = './checkpoints/'
 
-checkpoint_directory = './ckpt_queue/'
-log_directory = '../../log/video_interpolation/model_queue/'
-tfrecords_path = '../../Data/UCF101_dataset_train_320_240.tfrecords'
+checkpoint_directory = './ckpt/'
+log_directory = '../../log/video_interpolation/model_Y_Net/'
+tfrecords_path = '../../Data/ucf-train/train_*.tfrecord'
 
-if not os.path.exists(checkpoint_directory):
-    os.makedirs(checkpoint_directory)
+if not tf.gfile.Exists(checkpoint_directory):
+    tf.gfile.MakeDirs(checkpoint_directory)
+
+if not tf.gfile.Exists(log_directory):
+    tf.gfile.MakeDirs(log_directory)
 
 BATCH_SIZE = 16
 START_LEARNING_RATE = 1e-4
@@ -44,42 +47,6 @@ img_batch, label_batch = tf.train.shuffle_batch(
     num_threads=4,
     min_after_dequeue=1000
 )
-
-# with tf.Session() as sess:
-#     init_op = tf.initialize_all_variables()
-#     sess.run(init_op)
-#     coord=tf.train.Coordinator()
-#     threads= tf.train.start_queue_runners(sess = sess,coord=coord)
-#     diff_sum = 0
-#     for i in range(10):
-#         example, l = sess.run([img_batch,label_batch])
-#         # example = example/255.
-#         # l = l/255.
-#         for j in range(BATCH_SIZE):
-#             # frame1 = Image.fromarray(example[j][:,:,0:3]/255., 'RGB')
-#             # frame3 = Image.fromarray(example[j][:,:,3:6]/255., 'RGB')
-#             # frame`2 = Image.fromarray(l[j]/255., 'RGB')
-#             frame1 = example[j][:,:,0:3]
-#             frame2 = example[j][:, :, 3:6]
-#             diff = np.sum(np.sum(np.sum(abs(frame2*255-frame1*255), axis=2), axis=1),axis=0)
-#             diff_sum = diff_sum+diff
-#             print diff
-#             frame3 = l[j]
-#             # sigle_label = l[j]
-#
-#             cv2.imwrite(swd + 'batch_' + str(i) + '_' + 'size_' + str(j) + '_' + 'frame1' + '.png', frame1*255)
-#             cv2.imwrite(swd + 'batch_' + str(i) + '_' + 'size_' + str(j) + '_' + 'frame2' + '.png', frame2*255)
-#             cv2.imwrite(swd + 'batch_' + str(i) + '_' + 'size_' + str(j) + '_' + 'frame3' + '.png', frame3*255)
-#
-#             # print(example, l)
-#     print "average diff = %f" % (diff_sum/(10*BATCH_SIZE))
-#
-#     coord.request_stop()
-#     coord.join(threads)
-
-
-# inputs = tf.placeholder(tf.float32, [None, height, width, depth*2], name='inputs')
-# labels = tf.placeholder(tf.float32, [None, height, width, depth], name='labels')
 
 global_steps = tf.Variable(0, dtype=tf.int32, trainable=False, name='global_steps')
 learning_rate = tf.train.exponential_decay(START_LEARNING_RATE, global_steps, 5000, 0.96, staircase=True)
@@ -127,8 +94,46 @@ with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
 
         global_steps.assign(i).eval()
         if i % 500 == 0:
+
             saver.save(sess, checkpoint_directory+'trained_ckpt_model',
                        global_step=global_steps)
 
         print 'Iteration = %s, loss = %s' % (str(i), str(loss))
 writer.close()
+
+
+'''
+The following codes check the the inputs and labels of the network.
+'''
+# with tf.Session() as sess:
+#     init_op = tf.initialize_all_variables()
+#     sess.run(init_op)
+#     coord=tf.train.Coordinator()
+#     threads= tf.train.start_queue_runners(sess = sess,coord=coord)
+#     diff_sum = 0
+#     for i in range(10):
+#         example, l = sess.run([img_batch,label_batch])
+#         # example = example/255.
+#         # l = l/255.
+#         for j in range(BATCH_SIZE):
+#             # frame1 = Image.fromarray(example[j][:,:,0:3]/255., 'RGB')
+#             # frame3 = Image.fromarray(example[j][:,:,3:6]/255., 'RGB')
+#             # frame2 = Image.fromarray(l[j]/255., 'RGB')
+#             frame1 = example[j][:,:,0:3]
+#             frame3 = example[j][:, :, 3:6]
+#             diff = np.sum(np.sum(np.sum(abs(frame3*255-frame1*255), axis=2), axis=1),axis=0)
+#             diff_sum = diff_sum+diff
+#             print diff
+#             frame2 = l[j]
+#             # sigle_label = l[j]
+#
+#             cv2.imwrite(swd + 'batch_' + str(i) + '_' + 'size_' + str(j) + '_' + 'frame1' + '.png', frame1*255)
+#             cv2.imwrite(swd + 'batch_' + str(i) + '_' + 'size_' + str(j) + '_' + 'frame2' + '.png', frame2*255)
+#             cv2.imwrite(swd + 'batch_' + str(i) + '_' + 'size_' + str(j) + '_' + 'frame3' + '.png', frame3*255)
+#
+#             # print(example, l)
+#     print "average diff = %f" % (diff_sum/(10*BATCH_SIZE))
+#
+#     coord.request_stop()
+#     coord.join(threads)
+
