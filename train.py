@@ -48,9 +48,9 @@ frames, ground_truth = decoder_tfRecords(tfrecords_path)
 img_batch, label_batch = tf.train.shuffle_batch(
     [frames, ground_truth],
     batch_size=BATCH_SIZE,
-    capacity=6400,
+    capacity=3200,
     num_threads=4,
-    min_after_dequeue=3200,
+    min_after_dequeue=1600,
 )
 
 global_steps = tf.Variable(0, dtype=tf.int32, trainable=False, name='global_steps')
