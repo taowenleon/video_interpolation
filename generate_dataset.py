@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 
 RANDOM_SEED = 4242
-TFRECIRD_MAX_LEN = 50
+TFRECIRD_MAX_LEN = 32
 
 def _bytes_feature(value):
     return tf.train.Feature(bytes_list=tf.train.BytesList(value=[value]))
@@ -90,7 +90,7 @@ def write_tfRecords(writer, frames):
 def decoder_tfRecords(tfrecord_files):
 
     files = tf.gfile.Glob(tfrecord_files)
-    file_name_queue = tf.train.string_input_producer(files, shuffle=True)
+    file_name_queue = tf.train.string_input_producer(files, shuffle=True, num_epochs=None)
     reader = tf.TFRecordReader()
 
     _, serialized_example = reader.read(file_name_queue)
@@ -167,7 +167,7 @@ def video_decoder(dataset_path, files_list, output_path, name = "train", down_sa
             '''
             if len(frames) > 0:
                 write_tfRecords(writer, frames)
-            j += 1
+                j += 1
 
         if j == TFRECIRD_MAX_LEN-1:
             fidx += 1

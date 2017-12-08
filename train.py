@@ -48,15 +48,15 @@ frames, ground_truth = decoder_tfRecords(tfrecords_path)
 img_batch, label_batch = tf.train.shuffle_batch(
     [frames, ground_truth],
     batch_size=BATCH_SIZE,
-    capacity=5000,
+    capacity=6400,
     num_threads=4,
-    min_after_dequeue=1000
+    min_after_dequeue=3200,
 )
 
 global_steps = tf.Variable(0, dtype=tf.int32, trainable=False, name='global_steps')
 learning_rate = tf.train.exponential_decay(START_LEARNING_RATE, global_steps, 5000, 0.96, staircase=True)
 # _, loss_l2 = net(inputs, labels)
-predection = net(img_batch,BATCH_SIZE,height,width)
+predection = net(img_batch, BATCH_SIZE)
 
 loss_l2 = tf.nn.l2_loss(predection-label_batch)
 
@@ -80,6 +80,7 @@ gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.8)
 with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
 # with tf.Session() as sess:
     sess.run(init)
+    sess.run(tf.local_variables_initializer())
     coord = tf.train.Coordinator()
     threads = tf.train.start_queue_runners(coord=coord)
     writer = tf.summary.FileWriter(log_directory, sess.graph)

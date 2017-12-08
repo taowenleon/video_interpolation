@@ -22,15 +22,19 @@ def bias_variable(shape):
 def conv2d(x, W):
     return tf.nn.conv2d(x, W, strides=[1, 1, 1, 1], padding='SAME')
 
-def deconv2d(x, W, output_shape):
-    return tf.nn.conv2d_transpose(x, W, output_shape, strides=[1, 2, 2, 1], padding="SAME")
+def deconv2d(x, W, batch_size, out_channels):
+    in_height = int(x.get_shape()[1])
+    in_width = int(x.get_shape()[2])
+    return tf.nn.conv2d_transpose(x, W, [batch_size, in_height*2, in_width*2, out_channels], strides=[1, 2, 2, 1], padding="SAME")
 
 def max_pooling_2x2(x):
     return tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
 
-def net(input, batch_size, height, width):
-    frame1 = input[:, :, :, 0:3]
-    frame2 = input[:, :, :, 3:6]
+def net(inputs, batch_size):
+    frame1 = inputs[:, :, :, 0:3]
+    frame2 = inputs[:, :, :, 3:6]
+    height = inputs.get_shape()[1]
+    width = inputs.get_shape()[2]
 
     # Conv1
     with tf.name_scope('Conv1') as scope:
@@ -86,19 +90,16 @@ def net(input, batch_size, height, width):
         merge = tf.add(pooling3_1, pooling3_2, name="Merge")
 
     with tf.name_scope('DeConv1') as scope:
-        output_shape = tf.stack([batch_size, 60, 80, 64])
         W_deconv1 = weight_variable([3, 3, 64, 128])
-        deconv1 = deconv2d(merge, W_deconv1, output_shape)
+        deconv1 = deconv2d(merge, W_deconv1, batch_size, 64)
 
     with tf.name_scope('DeConv2') as scope:
-        output_shape = tf.stack([batch_size, 120, 160, 64])
         W_deconv2 = weight_variable([3, 3, 64, 64])
-        deconv2 = deconv2d(deconv1, W_deconv2, output_shape)
+        deconv2 = deconv2d(deconv1, W_deconv2, batch_size, 64)
 
     with tf.name_scope('DeConv3') as scope:
-        output_shape = tf.stack([batch_size, 240, 320, 64])
         W_deconv3 = weight_variable([3, 3, 64, 64])
-        deconv3 = deconv2d(deconv2, W_deconv3, output_shape)
+        deconv3 = deconv2d(deconv2, W_deconv3, batch_size, 64)
 
     with tf.name_scope('Conv6') as scope:
         W_conv6 = weight_variable([3, 3, 64, 3])
