@@ -51,6 +51,7 @@ img_batch, label_batch = tf.train.shuffle_batch(
     capacity=3200,
     num_threads=4,
     min_after_dequeue=1600,
+    allow_smaller_final_batch=True
 )
 
 global_steps = tf.Variable(0, dtype=tf.int32, trainable=False, name='global_steps')

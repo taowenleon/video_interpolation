@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 from model import net
 from metrics import PSNR, SSIM, MSSSIM
 
-model_path = "./ckpt_backup/"
+model_path = "./ckpt/"
 frame_path = "./test_video_frames/v_BalanceBeam_g05_c01/"
 
 frame1 = cv2.imread(frame_path+"7.png")
@@ -28,7 +28,8 @@ label = frame2
 label = np.array(label, dtype=np.float32)
 label = label[np.newaxis, :, :, :]/255.
 
-prediction = net(input_test,1,240,320)
+input_tests = tf.cast(input_test, dtype=tf.float32)
+prediction = net(input_tests,1)
 
 inputs = tf.placeholder(tf.float32, shape=[1,240,320,6])
 
