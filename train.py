@@ -106,6 +106,8 @@ with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
                        global_step=global_steps)
 
         print 'Iteration = %s, loss = %s' % (str(i), str(loss))
+    coord.request_stop()
+    coord.join(threads)
 writer.close()
 
 
