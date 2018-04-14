@@ -24,7 +24,7 @@ This is just a toy model, which following https://arxiv.org/abs/1706.01159.
 
 ### Results:
 
-![results](https://github.com/taowenleon/video_interpolation/blob/master/results/Figure_1.png)
+![results](https://github.com/taowenleon/video_interpolation/blob/master/results/prediction.png)
 
 ---
 
